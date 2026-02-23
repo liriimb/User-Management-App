@@ -9,12 +9,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import type { User } from "../types/user";
 import { isValidEmail } from "../utils/userUtils";
 
 type Props = {
   open: boolean;
+  user: User | null;
   onClose: () => void;
-  onAdd: (payload: {
+  onSave: (payload: {
+    id: number;
     name: string;
     email: string;
     companyName?: string;
@@ -29,43 +32,41 @@ type Props = {
   }) => void;
 };
 
-export default function AddUserDialog({ open, onClose, onAdd }: Props) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [website, setWebsite] = useState("");
-  const [street, setStreet] = useState("");
-  const [suite, setSuite] = useState("");
-  const [city, setCity] = useState("");
-  const [zipcode, setZipcode] = useState("");
+export default function EditUserDialog({ open, user, onClose, onSave }: Props) {
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [companyName, setCompanyName] = useState(user?.company?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [website, setWebsite] = useState(user?.website ?? "");
+  const [street, setStreet] = useState(user?.address?.street ?? "");
+  const [suite, setSuite] = useState(user?.address?.suite ?? "");
+  const [city, setCity] = useState(user?.address?.city ?? "");
+  const [zipcode, setZipcode] = useState(user?.address?.zipcode ?? "");
+
+  React.useEffect(() => {
+    setName(user?.name ?? "");
+    setEmail(user?.email ?? "");
+    setCompanyName(user?.company?.name ?? "");
+    setPhone(user?.phone ?? "");
+    setWebsite(user?.website ?? "");
+    setStreet(user?.address?.street ?? "");
+    setSuite(user?.address?.suite ?? "");
+    setCity(user?.address?.city ?? "");
+    setZipcode(user?.address?.zipcode ?? "");
+  }, [user]);
+
   const nameError = useMemo(() => name.trim().length === 0, [name]);
   const emailError = useMemo(
     () => email.trim().length === 0 || !isValidEmail(email),
     [email]
   );
 
-  function reset() {
-    setName("");
-    setEmail("");
-    setCompanyName("");
-    setPhone("");
-    setWebsite("");
-    setStreet("");
-    setSuite("");
-    setCity("");
-    setZipcode("");
-  }
-
-  function handleClose() {
-    reset();
-    onClose();
-  }
-
   function handleSubmit() {
+    if (!user) return;
     if (nameError || emailError) return;
 
-    onAdd({
+    onSave({
+      id: user.id,
       name,
       email,
       companyName: companyName.trim() || undefined,
@@ -79,12 +80,12 @@ export default function AddUserDialog({ open, onClose, onAdd }: Props) {
       },
     });
 
-    handleClose();
+    onClose();
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add User</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Edit User</DialogTitle>
       <DialogContent>
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField
@@ -93,7 +94,6 @@ export default function AddUserDialog({ open, onClose, onAdd }: Props) {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             error={nameError}
             helperText={nameError ? "Name is required" : " "}
-            autoFocus
             fullWidth
           />
           <TextField
@@ -153,11 +153,11 @@ export default function AddUserDialog({ open, onClose, onAdd }: Props) {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined">
           Cancel
         </Button>
         <Button onClick={handleSubmit} variant="contained">
-          Add
+          Save
         </Button>
       </DialogActions>
     </Dialog>

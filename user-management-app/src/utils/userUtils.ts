@@ -4,10 +4,7 @@ export function matchesSearch(u: User, q: string): boolean {
   const s = q.trim().toLowerCase();
   if (!s) return true;
   
-  return (
-    u.name.toLowerCase().includes(s) ||
-    u.email.toLowerCase().includes(s)
-  );
+    return u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
 }
 
 export type SortKey = "name" | "email" | "company";
